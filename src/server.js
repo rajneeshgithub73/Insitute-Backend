@@ -29,6 +29,8 @@ app.use(cookieParser())
 // route import
 
 import studentRouter from './routes/student.routes.js'
+import gradeRouter from './routes/grade.routes.js'
+import subjectRouter from './routes/subject.routes.js'
 
 // route declaration
 
@@ -37,6 +39,8 @@ app.get('/', (req, res) => {
 })
 
 app.use('/api/v1/student', studentRouter)
+app.use('/api/v1/grade', gradeRouter)
+app.use('/api/v1/subject', subjectRouter)
 
 connectDB()
 .then(() => {
