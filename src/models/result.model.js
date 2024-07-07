@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const resultSchema = new mongoose.Schema({
     year: {
-        type: Date,
+        type: String,
         required: true
     },
     gradeId: {

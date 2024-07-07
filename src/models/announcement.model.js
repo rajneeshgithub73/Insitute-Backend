@@ -1,22 +1,28 @@
 import mongoose from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
-const announcementSchema = new mongoose.Schema({
+const announcementSchema = new mongoose.Schema(
+  {
     announcer: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Teacher'
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Teacher",
     },
-    announcemenTitle: {
-        type: "string",
-        required: true
+    title: {
+      type: "string",
+      required: true,
     },
     date: {
-        type: Date,
-        required: true
+      type: String,
+      required: true,
     },
     content: {
-        type: String,
-        required: true
-    }
-}, { timestamps: true })
+      type: String,
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
 
-export const Announcement = mongoose.model('Announcement', announcementSchema)
+announcementSchema.plugin(mongooseAggregatePaginate);
+
+export const Announcement = mongoose.model("Announcement", announcementSchema);

@@ -11,7 +11,7 @@ const notesSchema = new mongoose.Schema({
         ref: 'Subject',
         required: true
     },
-    notesTitle: {
+    title: {
         type: String,
         required: true
     },
