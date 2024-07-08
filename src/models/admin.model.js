@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const adminSchema = new mongoose.Schema({
-    user: {
+    admin: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Teacher'
     }

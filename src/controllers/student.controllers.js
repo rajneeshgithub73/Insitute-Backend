@@ -217,13 +217,15 @@ const refreshAccessToken = async (req, res) => {
     secure: true,
   };
 
+  const { accessToken, newRefreshToken } = generateAccessAndRefreshToken(student._id)
+
   res
     .status(200)
     .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("refreshToken", newRefreshToken, options)
     .json({
       accessToken,
-      refreshToken: refreshToken,
+      refreshToken: newRefreshToken,
       message: "Access token is updated",
     });
 };

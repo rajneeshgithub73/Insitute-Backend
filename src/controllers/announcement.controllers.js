@@ -1,7 +1,10 @@
-import { Announcement } from "../models/announcement.model";
+import mongoose from "mongoose";
+import { Announcement } from "../models/announcement.model.js";
 
 const addAnnouncement = async (req, res) => {
-  const { title, content, date } = req.body;
+  console.log(req.body);
+
+  const { announcer, title, content, date } = req.body;
 
   if (title === "") {
     throw new Error("Announcement title is required!");
@@ -14,7 +17,8 @@ const addAnnouncement = async (req, res) => {
   }
 
   const announcement = await Announcement.create({
-    announcer: req.teacher?._id || req.admin?._id,
+    // announcer: req.teacher?._id || req.admin?._id,
+    announcer: announcer,
     title: title,
     content: content,
     date: date,
@@ -24,35 +28,69 @@ const addAnnouncement = async (req, res) => {
     throw new Error("Announcement is not created!");
   }
 
+  // const response = announcement.json();
+  console.log(announcement);
+
   res.status(200).json({
+    announcement: announcement,
     message: "Announcement created successfully",
   });
 };
 
 const getAnnouncementList = async (req, res) => {
-  const announcementList = await Announcement.find({
-    date: { $lte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-  });
+  try {
+    const announcementList = await Announcement.find();
+    console.log(announcementList);
 
-  res.status(200).json({
-    announcementList: announcementList,
-    message: "Announcement list fetched successfully!",
-  });
+    res.status(200).json({
+      announcement: announcementList,
+      message: "Announcement list fetched successfully!",
+    });
+  } catch (error) {
+    throw new Error(error.message);
+  }
 };
 
 const readAnnouncement = async (req, res) => {
-  const { announcementId } = req.params;
+  const { id } = req.params;
 
-  if (!announcementId) {
+  console.log(id);
+
+  if (!id) {
     throw new Error("Invalid announcement!");
   }
 
-  const announcement = await Announcement.findById(announcementId);
-  // aggregation pipeline to get the announcerdetails from the announcement
+  const announcement = await Announcement.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(id),
+      },
+    },
+    {
+      $lookup: {
+        from: "students",
+        localField: "announcer",
+        foreignField: "_id",
+        as: "owner",
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        announcer: 1,
+        title: 1,
+        date: 1,
+        content: 1,
+        fullName: { $arrayElemAt: ["$owner.fullName", 0] },
+      },
+    },
+  ]);
 
   if (!announcement) {
     throw new Error("Announcement not found!");
   }
+
+  console.log(announcement);
 
   res.status(200).json({
     announcement: announcement,

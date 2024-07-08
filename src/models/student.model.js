@@ -38,7 +38,7 @@ const studentSchema = new mongoose.Schema(
     gradeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Grade",
-      // required: true
+      required: true,
     },
     age: {
       type: Number,
@@ -60,6 +60,7 @@ const studentSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Subject",
+        required: true,
       },
     ],
     isVerified: {
