@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
-import { Student } from "../models/student.model";
+import { ApiError } from "./../utils/apiError.utils.js";
+import { ApiResponse } from "./../utils/apiResponse.utils.js";
+import { Student } from "../models/student.model.js";
 
 export const verifyStudentJWT = async (req, res, next) => {
   try {
@@ -8,7 +10,7 @@ export const verifyStudentJWT = async (req, res, next) => {
       req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
-      throw new Error("Unauthorized access");
+      throw new ApiError(401, "Unauthorized Access");
     }
 
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
@@ -18,12 +20,12 @@ export const verifyStudentJWT = async (req, res, next) => {
     );
 
     if (!student) {
-      throw new Error("Invalid access token");
+      throw new ApiError(400, "Invalid Access Token");
     }
 
     req.student = student;
     next();
   } catch (error) {
-    throw new Error(error?.message || "Invalid access token");
+    res.status(401).json(new ApiResponse(error.statusCode, {}, error.message));
   }
 };

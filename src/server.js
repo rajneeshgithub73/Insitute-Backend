@@ -36,11 +36,24 @@ import studentRouter from "./routes/student.routes.js";
 import gradeRouter from "./routes/grade.routes.js";
 import subjectRouter from "./routes/subject.routes.js";
 import announcementRouter from "./routes/announcement.routes.js";
+import { ApiError } from "./utils/apiError.utils.js";
+import { ApiResponse } from "./utils/apiResponse.utils.js";
 
 // route declaration
 
-app.get("/", (req, res) => {
-  res.send("hello world");
+app.get("/api/test", (req, res) => {
+  try {
+    console.log("everything is going smooth");
+    // throw new ApiError(400, "error occored");
+    res
+      .status(200)
+      .json(new ApiResponse(200, { name: "rajneesh" }, "successfull!"));
+  } catch (error) {
+    console.log(error);
+    res
+      .status(400)
+      .json(new ApiResponse(400, {}, error.message || "mye error!"));
+  }
 });
 
 app.use("/api/v1/student", studentRouter);

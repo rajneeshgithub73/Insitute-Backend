@@ -35,9 +35,8 @@ const studentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    gradeId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Grade",
+    gradeValue: {
+      type: Number,
       required: true,
     },
     age: {
@@ -49,7 +48,7 @@ const studentSchema = new mongoose.Schema(
       required: true,
     },
     phone: {
-      type: Number,
+      type: String,
       required: true,
     },
     address: {
@@ -92,7 +91,7 @@ studentSchema.methods.generateAccessToken = function () {
       _id: this._id,
       email: this.email,
       username: this.username,
-      fullname: this.fullname,
+      fullName: this.fullName,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {
