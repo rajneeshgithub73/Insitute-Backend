@@ -36,13 +36,17 @@ import studentRouter from "./routes/student.routes.js";
 import gradeRouter from "./routes/grade.routes.js";
 import subjectRouter from "./routes/subject.routes.js";
 import announcementRouter from "./routes/announcement.routes.js";
+import adminRouter from "./routes/admin.routes.js";
+import teacherRouter from "./routes/teacher.routes.js";
 import { ApiError } from "./utils/apiError.utils.js";
 import { ApiResponse } from "./utils/apiResponse.utils.js";
 
 // route declaration
 
-app.get("/api/test", (req, res) => {
+app.post("/api/v1/test", (req, res) => {
   try {
+    const { code } = req.body;
+    console.log(code);
     console.log("everything is going smooth");
     // throw new ApiError(400, "error occored");
     res
@@ -60,6 +64,8 @@ app.use("/api/v1/student", studentRouter);
 app.use("/api/v1/grade", gradeRouter);
 app.use("/api/v1/subject", subjectRouter);
 app.use("/api/v1/announcement", announcementRouter);
+app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/teacher", teacherRouter);
 
 connectDB()
   .then(() => {

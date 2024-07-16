@@ -6,7 +6,7 @@ import { Student } from "../models/student.model.js";
 export const verifyStudentJWT = async (req, res, next) => {
   try {
     const token =
-      req.cookies?.access_token ||
+      req.cookies?.accessToken ||
       req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {

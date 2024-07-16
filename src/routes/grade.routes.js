@@ -6,7 +6,7 @@ import {
 
 const router = Router();
 
-router.route("/addgrade").post(addGrade);
 router.route("/subjects/:gradeValue").get(getGradeSubjects);
+router.route("/add").post(addGrade);
 
 export default router;

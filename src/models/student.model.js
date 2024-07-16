@@ -55,10 +55,9 @@ const studentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    subjectIds: [
+    subjectNames: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Subject",
+        type: String,
         required: true,
       },
     ],

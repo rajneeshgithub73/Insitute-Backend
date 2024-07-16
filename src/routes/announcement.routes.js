@@ -13,6 +13,7 @@ import { verifyStudentOrTeacherJWT } from "../middlewares/studentOrTeacherAuth.m
 const router = new Router();
 
 router.route("/add").post(verifyTeacherJWT, addAnnouncement);
+
 router.route("/get-list").get(verifyStudentOrTeacherJWT, getAnnouncementList);
 router.route("/read/:id").get(verifyStudentOrTeacherJWT, readAnnouncement);
 router

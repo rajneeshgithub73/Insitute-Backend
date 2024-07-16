@@ -1,8 +1,9 @@
 import { Router } from "express"
-import { addSubject } from "../controllers/subject.controllers.js"
+import { addSubject, getAllSubjectList } from "../controllers/subject.controllers.js"
 
 const router = Router()
 
-router.route('/addsubject').post( addSubject )
+router.route('/add').post( addSubject )
+router.route('/subject-list').get( getAllSubjectList )
 
 export default router

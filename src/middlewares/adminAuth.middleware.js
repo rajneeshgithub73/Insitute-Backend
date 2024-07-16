@@ -5,12 +5,12 @@ export const verifyAdminJWT = async (req, res, next) => {
     const admin = await Admin.find({ admin: req.teacher?._id });
 
     if (!admin) {
-      throw new Error("Invalid request");
+      throw new Error("Unauthorized Access");
     }
 
     req.admin = true;
     next();
   } catch (error) {
-    throw new Error(error?.message || "Invalid access token");
+    throw new Error(error?.message || "Unauthorized Access");
   }
 };

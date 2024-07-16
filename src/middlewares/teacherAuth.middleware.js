@@ -1,14 +1,16 @@
 import { Teacher } from "../models/teacher.model.js";
 import jwt from "jsonwebtoken";
+import { ApiError } from "../utils/apiError.utils.js";
+import { ApiResponse } from "../utils/apiResponse.utils.js";
 
 export const verifyTeacherJWT = async (req, res, next) => {
   try {
     const token =
-      req.cookies?.access_token ||
+      req.cookies?.accessToken ||
       req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
-      throw new Error("Unauthorized access");
+      throw new ApiError(401, "Unauthorized access");
     }
 
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
@@ -18,12 +20,12 @@ export const verifyTeacherJWT = async (req, res, next) => {
     );
 
     if (!teacher) {
-      throw new Error("Invalid access token");
+      throw new ApiError(401, "Unauthorized access");
     }
 
     req.teacher = teacher;
     next();
   } catch (error) {
-    throw new Error(error?.message || "Invalid access token");
+    res.status(401).json(new ApiResponse(401, {}, error.message))
   }
 };

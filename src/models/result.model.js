@@ -5,14 +5,12 @@ const resultSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    gradeId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Grade',
+    gradeValue: {
+        type: Number,
         required: true
     },
-    subjectId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Subject',
+    subjectName: {
+        type: String,
         required: true
     },
     studentId: {

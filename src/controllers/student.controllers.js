@@ -1,4 +1,5 @@
 import Joi from "joi";
+import jwt from "jsonwebtoken";
 import { Student } from "../models/student.model.js";
 import { uploadOnCloudinary } from "./../utils/cloudinary.utils.js";
 import { ApiError } from "../utils/apiError.utils.js";
@@ -8,16 +9,18 @@ const generateAccessAndRefreshToken = async (userId) => {
   try {
     const student = await Student.findById(userId);
     const accessToken = student.generateAccessToken();
-    const refreshToken = student.generateRefreshToken();
+    const newRefreshToken = student.generateRefreshToken();
 
-    student.refreshToken = refreshToken;
+    student.refreshToken = newRefreshToken;
     await student.save({
       validateBeforeSave: false,
     });
+    // console.log("1 :");
+    // console.table([accessToken, newRefreshToken]);
 
-    return { accessToken, refreshToken };
+    return { accessToken, newRefreshToken };
   } catch (error) {
-    throw new ApiError(500, "Error generating access token")
+    throw new ApiError(500, "Error generating access token");
   }
 }; // generateAccessAndRefreshToken completed
 
@@ -37,7 +40,7 @@ const registerStudent = async (req, res) => {
         .required(),
       address: Joi.string().required(),
       gradeValue: Joi.number().required().min(6).max(12),
-      subjectIds: Joi.array().required().min(1),
+      subjectNames: Joi.array().required().min(1),
     });
 
     const { error, value } = studentRegisterSchema.validate(req.body, {
@@ -60,7 +63,7 @@ const registerStudent = async (req, res) => {
       dob,
       phone,
       address,
-      subjectIds,
+      subjectNames,
     } = req.body;
 
     const existedStudent = await Student.findOne({ username });
@@ -93,7 +96,7 @@ const registerStudent = async (req, res) => {
       dob: dob,
       phone,
       address,
-      subjectIds,
+      subjectNames,
     });
 
     const createdStudent = await Student.findById(student._id).select(
@@ -151,9 +154,8 @@ const loginStudent = async (req, res) => {
       throw new ApiError(400, "Wrong Password!");
     }
 
-    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
-      isStudentExist._id
-    );
+    const { accessToken, newRefreshToken } =
+      await generateAccessAndRefreshToken(isStudentExist._id);
 
     const studentLoggedIn = await Student.findById(isStudentExist._id).select(
       "-password -refreshToken"
@@ -166,12 +168,12 @@ const loginStudent = async (req, res) => {
 
     return res
       .status(200)
-      .cookie("access_token", accessToken, options)
-      .cookie("refresh_token", refreshToken, options)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", newRefreshToken, options)
       .json(
         new ApiResponse(
           200,
-          { studentLoggedIn, accessToken, refreshToken },
+          { studentLoggedIn, accessToken, refreshToken: newRefreshToken },
           "Student logged in successfully"
         )
       );
@@ -212,8 +214,10 @@ const logoutStudent = async (req, res) => {
 
 const refreshAccessToken = async (req, res) => {
   try {
+    // console.log("cookies : ",req.cookies);
+
     const incomingRefreshToken =
-      req.cookie?.refresh_token || req.body.refreshToken;
+      req.cookies?.refreshToken || req.body.refreshToken;
 
     if (!incomingRefreshToken) {
       throw new ApiError(400, "Token Missing!");
@@ -239,9 +243,10 @@ const refreshAccessToken = async (req, res) => {
       secure: true,
     };
 
-    const { accessToken, newRefreshToken } = generateAccessAndRefreshToken(
-      student._id
-    );
+    const { accessToken, newRefreshToken } =
+      await generateAccessAndRefreshToken(student._id);
+    // console.log("2");
+    // console.table([accessToken, newRefreshToken]);
 
     res
       .status(200)
@@ -258,20 +263,20 @@ const refreshAccessToken = async (req, res) => {
         )
       );
   } catch (error) {
-    res
-      .status(error.statusCode)
-      .json(new ApiResponse(error.statusCode, {}, error.message));
+    res.status(400).json(new ApiResponse(400, {}, error.message));
   }
 }; // refreshAccessToken completed
 
-const changeCurrentPassword = async (req, res) => {
+const updateProfile = async (req, res) => {
   try {
-    const changePasswordSchema = Joi.object({
+    const updateProfileSchema = Joi.object({
       oldPassword: Joi.string().required(),
       newPassword: Joi.string().required(),
+      // gradeValue: Joi.string().required(),
+      subjectNames: Joi.array().required().min(1),
     });
 
-    const { error, value } = changePasswordSchema.validate(req.body, {
+    const { error, value } = updateProfileSchema.validate(req.body, {
       abortEarly: false,
     });
 
@@ -279,7 +284,11 @@ const changeCurrentPassword = async (req, res) => {
       throw new ApiError(400, error.message);
     }
 
-    const { oldPassword, newPassword } = req.body;
+    const {
+      oldPassword,
+      newPassword,
+      // gradeValue
+    } = req.body;
 
     const student = await Student.findById(req.student?._id);
 
@@ -289,16 +298,17 @@ const changeCurrentPassword = async (req, res) => {
       throw new ApiError(400, "Invalid old Password!");
     }
 
-    user.password = newPassword;
+    student.password = newPassword;
+    // student.gradeValue = gradeValue;
 
-    await user.save({ validateBeforeSave: false });
+    await student.save({ validateBeforeSave: false });
 
     res
       .status(200)
-      .json(new ApiResponse(200, {}, "Password updated successfully"));
+      .json(new ApiResponse(200, {}, "Profile Updated"));
   } catch (error) {
     console.log(error);
-    res.status(500).json(new ApiResponse(500, {}, "Error updating password"));
+    res.status(500).json(new ApiResponse(500, {}, "Error Updating Profile"));
   }
 }; // changeCurrentPassword completed
 
@@ -315,6 +325,6 @@ export {
   loginStudent,
   logoutStudent,
   refreshAccessToken,
-  changeCurrentPassword,
+  updateProfile,
   getCurrentStudent,
 };

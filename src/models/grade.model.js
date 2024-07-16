@@ -5,10 +5,9 @@ const gradeSchema = new mongoose.Schema({
     gradeValue: {
         type: Number
     },
-    subject: [
+    subjectNames: [
         {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Subject'
+            type: String,
         }
     ]
 }, { timestamps: true })

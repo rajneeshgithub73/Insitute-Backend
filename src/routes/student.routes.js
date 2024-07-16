@@ -1,11 +1,11 @@
 import { Router } from "express";
 import {
-  changeCurrentPassword,
   getCurrentStudent,
   loginStudent,
   logoutStudent,
   refreshAccessToken,
   registerStudent,
+  updateProfile,
 } from "../controllers/student.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyStudentJWT } from "../middlewares/studentAuth.middleware.js";
@@ -17,6 +17,6 @@ router.route("/login").post(loginStudent);
 router.route("/refresh-token").get(refreshAccessToken);
 router.route("/get-student").get(verifyStudentJWT, getCurrentStudent);
 router.route("/logout").post(verifyStudentJWT, logoutStudent);
-router.route("/change-password").post(verifyStudentJWT, changeCurrentPassword);
+router.route("/update").post(verifyStudentJWT, updateProfile);
 
 export default router;

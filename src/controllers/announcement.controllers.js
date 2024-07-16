@@ -1,154 +1,195 @@
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import { Announcement } from "../models/announcement.model.js";
+import { ApiError } from "../utils/apiError.utils.js";
+import { ApiResponse } from "../utils/apiResponse.utils.js";
+import Joi from "joi";
 
 const addAnnouncement = async (req, res) => {
-  console.log(req.body);
+  try {
+    const addAnnouncementSchema = Joi.object({
+      title: Joi.string().required(),
+      content: Joi.string().required(),
+      date: Joi.string().required(),
+    });
 
-  const { announcer, title, content, date } = req.body;
+    const { error, value } = addAnnouncementSchema.validate(req.body, {
+      abortEarly: false,
+    });
 
-  if (title === "") {
-    throw new Error("Announcement title is required!");
+    if (error) {
+      console.log("joi validation error : ", error);
+      throw new ApiError(400, error.message);
+    }
+
+    console.log(req.body);
+
+    const { title, content, date } = req.body;
+
+    const announcement = await Announcement.create({
+      announcer: req.teacher?._id,
+      title: title,
+      content: content,
+      date: date,
+    });
+
+    if (!announcement) {
+      throw new ApiError(500, "Announcement Failed!");
+    }
+
+    res.status(200).json(new ApiResponse(200, {}, "Announcement Added"));
+  } catch (error) {
+    console.log(error);
+    res
+      .status(error.statusCode)
+      .json(new ApiResponse(error.statusCode, {}, error.message));
   }
-  if (content === "") {
-    throw new Error("Announcement content is required!");
-  }
-  if (date === "") {
-    throw new Error("Announcement date is required!");
-  }
-
-  const announcement = await Announcement.create({
-    // announcer: req.teacher?._id || req.admin?._id,
-    announcer: announcer,
-    title: title,
-    content: content,
-    date: date,
-  });
-
-  if (!announcement) {
-    throw new Error("Announcement is not created!");
-  }
-
-  // const response = announcement.json();
-  console.log(announcement);
-
-  res.status(200).json({
-    announcement: announcement,
-    message: "Announcement created successfully",
-  });
-};
+}; // addAnnouncement completed
 
 const getAnnouncementList = async (req, res) => {
   try {
     const announcementList = await Announcement.find();
     console.log(announcementList);
 
-    res.status(200).json({
-      announcement: announcementList,
-      message: "Announcement list fetched successfully!",
-    });
+    if (!announcementList) {
+      throw new ApiError(500, "Get Announcement failed");
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          announcementList,
+          "Announcement list fetched successfully!"
+        )
+      );
   } catch (error) {
-    throw new Error(error.message);
+    res
+      .status(400)
+      .json(new ApiResponse(400, {}, `1: ${error.message}`));
   }
-};
+}; // getAnnouncementList completed
 
 const readAnnouncement = async (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  console.log(id);
+    if (!isValidObjectId(id)) {
+      throw new ApiError(400, "Invalid Announcement!");
+    }
 
-  if (!id) {
-    throw new Error("Invalid announcement!");
+    const announcement = await Announcement.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(id),
+        },
+      },
+      {
+        $lookup: {
+          from: "students",
+          localField: "announcer",
+          foreignField: "_id",
+          as: "owner",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          announcer: 1,
+          title: 1,
+          date: 1,
+          content: 1,
+          fullName: { $arrayElemAt: ["$owner.fullName", 0] },
+        },
+      },
+    ]);
+
+    if (!announcement) {
+      throw new ApiError(400, "Announcement Not Found!");
+    }
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, announcement, "announcement fetched successfully!")
+      );
+  } catch (error) {
+    res.status(400).json(new ApiResponse(400, {}, error.message));
   }
-
-  const announcement = await Announcement.aggregate([
-    {
-      $match: {
-        _id: new mongoose.Types.ObjectId(id),
-      },
-    },
-    {
-      $lookup: {
-        from: "students",
-        localField: "announcer",
-        foreignField: "_id",
-        as: "owner",
-      },
-    },
-    {
-      $project: {
-        _id: 1,
-        announcer: 1,
-        title: 1,
-        date: 1,
-        content: 1,
-        fullName: { $arrayElemAt: ["$owner.fullName", 0] },
-      },
-    },
-  ]);
-
-  if (!announcement) {
-    throw new Error("Announcement not found!");
-  }
-
-  console.log(announcement);
-
-  res.status(200).json({
-    announcement: announcement,
-    message: "announcement fetched successfully!",
-  });
-};
+}; // readAnnouncement completed
 
 const updateAnnouncement = async (req, res) => {
-  const { title, date, content } = req.body;
-  const { id } = req.params;
+  try {
+    const addAnnouncementSchema = Joi.object({
+      title: Joi.string().required(),
+      content: Joi.string().required(),
+      date: Joi.string().required(),
+    });
 
-  if (title === "") {
-    throw new Error("Announcement title is required!");
-  }
-  if (content === "") {
-    throw new Error("Announcement content is required!");
-  }
-  if (date === "") {
-    throw new Error("Announcement date is required!");
-  }
+    const { error, value } = addAnnouncementSchema.validate(req.body, {
+      abortEarly: false,
+    });
 
-  const updatedAnnouncement = await Announcement.findByIdAndUpdate(
-    id,
-    {
-      $set: {
-        title,
-        content,
-        date,
-      },
-    },
-    {
-      new: true,
+    if (error) {
+      console.log("joi validation error : ", error);
+      throw new ApiError(400, error.message);
     }
-  );
 
-  if (!updatedAnnouncement) {
-    throw new Error("Something went wrong!!");
+    const { title, content, date } = req.body;
+
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      throw new ApiError(400, "invalid announcement");
+    }
+
+    const updatedAnnouncement = await Announcement.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          title,
+          content,
+          date,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!updatedAnnouncement) {
+      throw new ApiError(500, "Update Failed!");
+    }
+
+    res.status(200).json(new ApiResponse(200, {}, "Announcement updated"));
+  } catch (error) {
+    res
+      .status(error.statusCode)
+      .json(new ApiResponse(error.statusCode, {}, error.message));
   }
-
-  res.status(200).json({
-    announcement: updatedAnnouncement,
-    message: "Announcement updated!!",
-  });
-};
+}; // updateAnnouncement completed
 
 const deleteAnnouncement = async (req, res) => {
-  const { id } = req.params;
-
   try {
-    await Announcement.findByIdAndDelete(id);
-  } catch (error) {
-    throw new Error(error.message);
-  }
+    const { id } = req.params;
 
-  res.status(200).json({
-    message: "Announcement deleted",
-  });
-};
+    if (!isValidObjectId(id)) {
+      throw new ApiError(400, "invalid announcement");
+    }
+
+    try {
+      await Announcement.findByIdAndDelete(id);
+    } catch (error) {
+      throw new ApiError(500, error.message);
+    }
+
+    res.status(200).json(new ApiResponse(200, {}, "Announcement Deleted!"));
+  } catch (error) {
+    res
+      .status(error.statusCode)
+      .json(new ApiResponse(error.statusCode, {}, error.message));
+  }
+}; // deleteAnnouncement completed
 
 export {
   addAnnouncement,

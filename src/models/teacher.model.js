@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const teacherSchema = new mongoose.Schema(
   {
@@ -16,6 +18,11 @@ const teacherSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     password: {
       type: String,
       required: true,
@@ -25,19 +32,12 @@ const teacherSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    gradeIds: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Grade",
-        required: true,
-      },
-    ],
     age: {
       type: Number,
       required: true,
     },
     dob: {
-      type: Date,
+      type: String,
       required: true,
     },
     phone: {
@@ -48,10 +48,15 @@ const teacherSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    subjectIds: [
+    gradeValues: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Subject",
+        type: Number,
+        required: true,
+      },
+    ],
+    subjectNames: [
+      {
+        type: String,
         required: true,
       },
     ],
@@ -84,7 +89,7 @@ teacherSchema.methods.generateAccessToken = function () {
       _id: this._id,
       email: this.email,
       username: this.username,
-      fullname: this.fullname,
+      fullName: this.fullName,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {

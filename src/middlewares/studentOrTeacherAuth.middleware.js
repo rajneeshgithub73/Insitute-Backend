@@ -1,19 +1,18 @@
 import jwt from "jsonwebtoken";
 import { Student } from "../models/student.model.js";
 import { Teacher } from "../models/teacher.model.js";
+import { ApiError } from "../utils/apiError.utils.js";
+import { ApiResponse } from "../utils/apiResponse.utils.js";
 
 export const verifyStudentOrTeacherJWT = async (req, res, next) => {
-
-    console.log(req.header('Authorization'))
+  console.log("hello");
   try {
     const token =
-      req.cookies?.access_token ||
+      req.cookies?.accessToken ||
       req.header("Authorization")?.replace("Bearer ", "");
 
-    console.log("token: ", token);
-
     if (!token) {
-      throw new Error("Unauthorized access");
+      throw new ApiError(401, "Unauthorized access");
     }
 
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
@@ -22,22 +21,17 @@ export const verifyStudentOrTeacherJWT = async (req, res, next) => {
       "-password -refreshToken"
     );
 
-    if (!student) {
-      const teacher = await Teacher.findById(decodedToken?._id).select(
-        "-password -refreshToken"
-      );
+    const teacher = await Teacher.findById(decodedToken?._id).select(
+      "-password -refreshToken"
+    );
 
-      if (!teacher) {
-        throw new Error("Invalid access token");
-      }
-
+    if(student){
+      req.student = student;
+    }else{
       req.teacher = teacher;
-      next();
     }
-
-    req.student = student;
     next();
   } catch (error) {
-    throw new Error(error?.message || "Invalid access token");
+    res.status(401).json(new ApiResponse(401, {}, "Unauthorized access"))
   }
 };
