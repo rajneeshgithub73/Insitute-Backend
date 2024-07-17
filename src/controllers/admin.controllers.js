@@ -49,9 +49,7 @@ const deleteStudent = async (req, res) => {
 
     res.status(200).json(new ApiResponse(200, {}, "Student deleted!"));
   } catch (error) {
-    res
-      .status(400)
-      .json(new ApiResponse(400, {}, error.message));
+    res.status(400).json(new ApiResponse(400, {}, error.message));
   }
 };
 
@@ -83,80 +81,40 @@ const toggleVerifyStudent = async (req, res) => {
   }
 };
 
-const updateStudentPassword = async (req, res) => {
+const updatePassword = async (req, res) => {
   try {
-    const { id } = req.params;
-    if (!isValidObjectId(id)) {
-      throw new ApiError(400, "Invalid student");
+    const { username, password } = req.body;
+
+    if (username === "") {
+      throw new ApiError(400, "username required");
     }
 
-    const { newPassword } = req.body;
-
-    if (newPassword === "") {
-      throw new ApiError(400, "Invalid new password");
+    if (password === "") {
+      throw new ApiError(400, "password required");
     }
 
-    const student = await Student.findById(id);
+    const student = await Student.find({
+      username: username,
+    });
 
-    if (!student) {
-      throw new ApiError(400, "Student not found");
-    }
+    const teacher = await Teacher.find({
+      username: username,
+    });
 
-    student.password = newPassword;
-
-    try {
+    if (student) {
+      student.password = password;
       await student.save({ validateBeforeSave: false });
-    } catch (error) {
-      throw new ApiError(500, "Password Update Failed");
-    }
-
-    res.status(200).json(new ApiResponse(200, {}, "Password updated"));
-  } catch (error) {
-    res
-      .status(error.statusCode)
-      .json(new ApiResponse(error.statusCode, {}, error.message));
-  }
-};
-
-const updateTeacherPassword = async (req, res) => {
-  try {
-    const { id } = req.params;
-    if (!isValidObjectId(id)) {
-      throw new ApiError(400, "Invalid teacher");
-    }
-
-    const { newPassword } = req.body;
-
-    if (newPassword === "") {
-      throw new ApiError(400, "Invalid new password");
-    }
-
-    const teacher = await Teacher.findById(id);
-
-    if (!teacher) {
-      throw new ApiError(400, "Teacher not found");
-    }
-
-    teacher.password = newPassword;
-
-    try {
+    } else if (teacher) {
+      teacher.password = password;
       await teacher.save({ validateBeforeSave: false });
-    } catch (error) {
-      throw new ApiError(500, "Password Update Failed");
+    } else {
+      throw new ApiError(400, "user not found");
     }
 
     res.status(200).json(new ApiResponse(200, {}, "Password updated"));
   } catch (error) {
-    res
-      .status(error.statusCode)
-      .json(new ApiResponse(error.statusCode, {}, error.message));
+    res.status(400).json(new ApiResponse(400, {}, error.message));
   }
 };
 
-export {
-  filterStudents,
-  deleteStudent,
-  toggleVerifyStudent,
-  updateStudentPassword,
-  updateTeacherPassword,
-};
+export { filterStudents, deleteStudent, toggleVerifyStudent, updatePassword };

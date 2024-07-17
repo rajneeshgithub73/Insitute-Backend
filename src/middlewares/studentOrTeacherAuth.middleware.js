@@ -5,7 +5,6 @@ import { ApiError } from "../utils/apiError.utils.js";
 import { ApiResponse } from "../utils/apiResponse.utils.js";
 
 export const verifyStudentOrTeacherJWT = async (req, res, next) => {
-  console.log("hello");
   try {
     const token =
       req.cookies?.accessToken ||

@@ -38,27 +38,10 @@ import subjectRouter from "./routes/subject.routes.js";
 import announcementRouter from "./routes/announcement.routes.js";
 import adminRouter from "./routes/admin.routes.js";
 import teacherRouter from "./routes/teacher.routes.js";
-import { ApiError } from "./utils/apiError.utils.js";
-import { ApiResponse } from "./utils/apiResponse.utils.js";
+import resultRouter from "./routes/result.routes.js";
+import feedbackRouter from "./routes/feedback.routes.js";
 
 // route declaration
-
-app.post("/api/v1/test", (req, res) => {
-  try {
-    const { code } = req.body;
-    console.log(code);
-    console.log("everything is going smooth");
-    // throw new ApiError(400, "error occored");
-    res
-      .status(200)
-      .json(new ApiResponse(200, { name: "rajneesh" }, "successfull!"));
-  } catch (error) {
-    console.log(error);
-    res
-      .status(400)
-      .json(new ApiResponse(400, {}, error.message || "mye error!"));
-  }
-});
 
 app.use("/api/v1/student", studentRouter);
 app.use("/api/v1/grade", gradeRouter);
@@ -66,6 +49,8 @@ app.use("/api/v1/subject", subjectRouter);
 app.use("/api/v1/announcement", announcementRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/teacher", teacherRouter);
+app.use("/api/v1/result", resultRouter);
+app.use("/api/v1/feedback", feedbackRouter);
 
 connectDB()
   .then(() => {

@@ -17,11 +17,8 @@ const addAnnouncement = async (req, res) => {
     });
 
     if (error) {
-      console.log("joi validation error : ", error);
       throw new ApiError(400, error.message);
     }
-
-    console.log(req.body);
 
     const { title, content, date } = req.body;
 
@@ -36,9 +33,8 @@ const addAnnouncement = async (req, res) => {
       throw new ApiError(500, "Announcement Failed!");
     }
 
-    res.status(200).json(new ApiResponse(200, {}, "Announcement Added"));
+    res.status(200).json(new ApiResponse(200, announcement, "Announcement Added"));
   } catch (error) {
-    console.log(error);
     res
       .status(error.statusCode)
       .json(new ApiResponse(error.statusCode, {}, error.message));
@@ -48,7 +44,6 @@ const addAnnouncement = async (req, res) => {
 const getAnnouncementList = async (req, res) => {
   try {
     const announcementList = await Announcement.find();
-    console.log(announcementList);
 
     if (!announcementList) {
       throw new ApiError(500, "Get Announcement failed");

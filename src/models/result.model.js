@@ -13,9 +13,12 @@ const resultSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    studentId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Student',
+    studentName: {
+        type: String,
+        required: true
+    },
+    avatar: {
+        type: String,
         required: true
     },
     marks: {

@@ -1,16 +1,17 @@
-import { required } from "joi";
 import mongoose from "mongoose";
 
 const notesSchema = new mongoose.Schema({
     gradeValue: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Grade',
+        type: Number,
         required: true
     },
-    subjectId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Subject',
+    subjectName: {
+        type: String,
         required: true
+    },
+    chapterNo: {
+        type: Number,
+        required: true,
     },
     chapterName: {
         type: String,

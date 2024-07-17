@@ -9,7 +9,8 @@ const addNotes = async (req, res) => {
   try {
     const addNotesSchema = Joi.object({
       gradeValue: Joi.number().required().min(6).max(12),
-      subjectId: Joi.string().required(),
+      subjectName: Joi.string().required(),
+      chapterNo: Joi.number().required().min(1),
       chapterName: Joi.string().required(),
       title: Joi.string().required(),
       content: Joi.string(),
@@ -23,7 +24,8 @@ const addNotes = async (req, res) => {
       throw new ApiError(400, error.message);
     }
 
-    const { gradeValue, subjectId, chapterName, title, content } = req.body;
+    const { gradeValue, subjectName, chapterNo, chapterName, title, content } =
+      req.body;
 
     const fileLocalPath = req.file?.path;
 
@@ -39,11 +41,12 @@ const addNotes = async (req, res) => {
 
     const createNote = await Notes.create({
       gradeValue,
-      subjectId,
+      subjectName,
+      chapterNo,
       chapterName,
       title,
       content,
-      fileURL,
+      fileURL: fileURL.url,
     });
 
     if (!createNote) {
@@ -58,31 +61,45 @@ const addNotes = async (req, res) => {
 
 const getSubjectNotes = async (req, res) => {
   try {
-    const { gradeValue, subjectId } = req.params;
+    const { gradeValue, subjectName } = req.params;
     if (gradeValue < 6 || gradeValue > 12) {
-      throw new ApiError(400, "Invalid grade");
+      throw new ApiError(400, "Invalid Grade");
     }
-    if (!isValidObjectId(subjectId)) {
-      throw new ApiError(400, "Invalid subjectId");
+    if (subjectName === "") {
+      throw new ApiError(400, "Invalid Subject Name");
     }
 
     const notes = Notes.find({
       gradeValue: gradeValue,
-      subjectId: subjectId,
+      subjectName: subjectName,
     });
 
     if (!notes) {
-      throw new ApiError(500, "Notes not found");
+      throw new ApiError(500, "Notes Not found");
     }
 
-    res.status(200).json(new ApiResponse(200, notes, "Notes fetched"));
+    res.status(200).json(new ApiResponse(200, notes, "Notes Fetched"));
   } catch (error) {
-    res
-      .status(error.statusCode)
-      .json(new ApiResponse(error.statusCode, {}, error.message));
+    res.status(400).json(new ApiResponse(400, {}, error.message));
   }
 };
 
-const getNote = async (req, res) => {};
+const getNote = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) throw new ApiError(400, "Invalid Notes");
+
+    const note = await Notes.findById(id);
+
+    if (!note) throw new ApiError(400, "Notes not found");
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, note, "notes fetched successfully"));
+  } catch (error) {
+    res.status(400).json(new ApiResponse(400, {}, error.message));
+  }
+};
 
 export { addNotes, getGradeNotes, getSubjectNotes, getNote };

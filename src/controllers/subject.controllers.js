@@ -27,7 +27,6 @@ const addSubject = async (req, res) => {
 const getAllSubjectList = async (req, res) => {
   try {
     const allSubjectList = await Subject.find();
-    // console.log(allSubjectList);
     if (!allSubjectList) {
       throw new ApiError(500, "Error while getting all subjects!");
     }
@@ -41,7 +40,6 @@ const getAllSubjectList = async (req, res) => {
         )
       );
   } catch (error) {
-    console.log(error);
     res.status(500).json(new ApiResponse(500, {}, error.message));
   }
 };

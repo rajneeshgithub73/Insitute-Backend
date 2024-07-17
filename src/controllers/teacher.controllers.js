@@ -18,14 +18,12 @@ const generateAccessAndRefreshToken = async (userId) => {
 
     return { accessToken, refreshToken };
   } catch (error) {
-    throw new ApiError(500, "Error generating access token")
+    throw new ApiError(500, "Error generating access token");
   }
 }; // generateAccessAndRefreshToken completed
 
 const registerTeacher = async (req, res) => {
   try {
-    console.log(req.body);
-
     const teacherRegisterSchema = Joi.object({
       fullName: Joi.string().required(),
       fatherName: Joi.string().required(),
@@ -48,7 +46,6 @@ const registerTeacher = async (req, res) => {
     });
 
     if (error) {
-      console.log("joi validation error : ", error.message);
       throw new ApiError(400, error.message);
     }
 
@@ -117,9 +114,7 @@ const registerTeacher = async (req, res) => {
       )
     );
   } catch (error) {
-    res
-      .status(400)
-      .json(new ApiResponse(400, {}, error.message));
+    res.status(400).json(new ApiResponse(400, {}, error.message));
   }
 }; // Register teacher completed
 
@@ -196,20 +191,20 @@ const logoutTeacher = async (req, res) => {
         new: true,
       }
     );
-  
+
     const options = {
       httpOnly: true,
       secure: true,
     };
-  
+
     res
       .status(200)
       .clearCookie("refreshToken", options)
       .clearCookie("accessToken", options)
-      .json(new ApiResponse(200, {}, "Teacher logout successfully"));
+      .json(new ApiResponse(200, {}, "logout successfull"));
   } catch (error) {
     console.log(error);
-    res.status(500).json(new ApiResponse(500, {}, "Teacher logout failed"));
+    res.status(500).json(new ApiResponse(500, {}, "logout failed"));
   }
 }; //Logout Teacher completed
 
@@ -267,14 +262,16 @@ const refreshAccessToken = async (req, res) => {
   }
 }; //refreshAccessToken completed
 
-const changeCurrentPassword = async (req, res) => {
+const updateProfile = async (req, res) => {
   try {
-    const changePasswordSchema = Joi.object({
+    const updateProfileSchema = Joi.object({
       oldPassword: Joi.string().required(),
       newPassword: Joi.string().required(),
+      gradeValues: Joi.array().required().min(1),
+      subjectNames: Joi.array().required().min(1),
     });
 
-    const { error, value } = changePasswordSchema.validate(req.body, {
+    const { error, value } = updateProfileSchema.validate(req.body, {
       abortEarly: false,
     });
 
@@ -282,7 +279,7 @@ const changeCurrentPassword = async (req, res) => {
       throw new ApiError(400, error.message);
     }
 
-    const { oldPassword, newPassword } = req.body;
+    const { oldPassword, newPassword, gradeValues, subjectNames } = req.body;
 
     const teacher = await Teacher.findById(req.teacher?._id);
 
@@ -293,17 +290,17 @@ const changeCurrentPassword = async (req, res) => {
     }
 
     teacher.password = newPassword;
+    teacher.gradeValues = gradeValues;
+    teacher.subjectNames = subjectNames;
 
     await teacher.save({ validateBeforeSave: false });
 
-    res
-      .status(200)
-      .json(new ApiResponse(200, {}, "Password updated successfully"));
+    res.status(200).json(new ApiResponse(200, {}, "Password Updated"));
   } catch (error) {
     console.log(error);
-    res.status(500).json(new ApiResponse(500, {}, "Error updating password"));
+    res.status(500).json(new ApiResponse(500, {}, error.message));
   }
-}; // changeCurrentPassword completed
+}; // update Profile completed
 
 const getCurrentTeacher = async (req, res) => {
   res
@@ -318,6 +315,6 @@ export {
   loginTeacher,
   logoutTeacher,
   refreshAccessToken,
-  changeCurrentPassword,
+  updateProfile,
   getCurrentTeacher,
 };

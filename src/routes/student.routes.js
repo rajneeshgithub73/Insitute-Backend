@@ -14,8 +14,8 @@ const router = Router();
 
 router.route("/register").post(upload.single("avatar"), registerStudent);
 router.route("/login").post(loginStudent);
-router.route("/refresh-token").get(refreshAccessToken);
-router.route("/get-student").get(verifyStudentJWT, getCurrentStudent);
+router.route("/refresh").get(refreshAccessToken);
+router.route("/get").get(verifyStudentJWT, getCurrentStudent);
 router.route("/logout").post(verifyStudentJWT, logoutStudent);
 router.route("/update").post(verifyStudentJWT, updateProfile);
 

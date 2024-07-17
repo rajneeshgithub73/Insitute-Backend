@@ -205,10 +205,10 @@ const logoutStudent = async (req, res) => {
       .status(200)
       .clearCookie("refreshToken", options)
       .clearCookie("accessToken", options)
-      .json(new ApiResponse(200, {}, "Student logout successfully"));
+      .json(new ApiResponse(200, {}, "logout successfull"));
   } catch (error) {
     console.log(error);
-    res.status(500).json(new ApiResponse(500, {}, "Student logout failed"));
+    res.status(500).json(new ApiResponse(500, {}, "logout failed"));
   }
 }; // Logout student completed
 
@@ -288,6 +288,7 @@ const updateProfile = async (req, res) => {
       oldPassword,
       newPassword,
       // gradeValue
+      subjectNames,
     } = req.body;
 
     const student = await Student.findById(req.student?._id);
@@ -300,6 +301,7 @@ const updateProfile = async (req, res) => {
 
     student.password = newPassword;
     // student.gradeValue = gradeValue;
+    student.subjectNames = subjectNames;
 
     await student.save({ validateBeforeSave: false });
 
@@ -308,9 +310,9 @@ const updateProfile = async (req, res) => {
       .json(new ApiResponse(200, {}, "Profile Updated"));
   } catch (error) {
     console.log(error);
-    res.status(500).json(new ApiResponse(500, {}, "Error Updating Profile"));
+    res.status(500).json(new ApiResponse(500, {}, error.message));
   }
-}; // changeCurrentPassword completed
+}; // update Profile completed
 
 const getCurrentStudent = async (req, res) => {
   res
